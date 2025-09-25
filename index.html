@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Hub v4.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-color-dark: #0056b3;
+            --bg-color: #f4f7f9;
+            --surface-color: #ffffff;
+            --text-color: #2c3e50;
+            --text-color-secondary: #596780;
+            --border-color: #dee2e6;
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --font-family: 'Segoe UI', 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
+            --border-radius: 8px;
+
+            --status-inprogress: #007bff;
+            --status-stuck: #ffc107;
+            --status-accepted: #28a745;
+            --status-confirmed: #17a2b8;
+            --status-cancelled: #dc3545;
+        }
+
+        html[data-theme='dark'] {
+            --primary-color: #3694ff;
+            --primary-color-dark: #57a8ff;
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-color-secondary: #a0a0a0;
+            --border-color: #444;
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --input-bg: #333;
+        }
+
+        html[data-theme='dark'] input[type="date"] {
+            color-scheme: dark;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-family); margin: 0;
+            background-color: var(--bg-color); color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .main-container {
+            max-width: 1800px;
+            margin: 20px auto;
+            padding: 0 24px;
+        }
+
+        .main-header {
+            background-color: var(--surface-color); padding: 16px 24px;
+            border-radius: var(--border-radius); box-shadow: var(--shadow-md);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .main-header h1 {
+            margin: 0; font-size: 1.8rem; color: var(--primary-color);
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .main-actions { display: flex; gap: 12px; align-items: center; }
+
+        .button {
+            padding: 8px 16px; border: 1px solid transparent; border-radius: var(--border-radius);
+            font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .button-primary { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .button-primary:hover { background-color: var(--primary-color-dark); border-color: var(--primary-color-dark); }
+        .button-secondary { background-color: transparent; color: var(--text-color); border-color: var(--border-color); }
+        .button-secondary:hover { background-color: var(--bg-color); }
+        .theme-toggle-btn { font-size: 1.2rem; padding: 8px 10px; }
+
+        /* v4.0: Dashboard Stats Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--surface-color); padding: 20px; border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--border-color);
+        }
+        .stat-card .stat-title {
+            font-size: 0.9rem; color: var(--text-color-secondary); margin: 0 0 8px 0; font-weight: 600;
+        }
+        .stat-card .stat-value {
+            font-size: 2rem; font-weight: 700; color: var(--primary-color); margin: 0;
+        }
+
+        .main-controls {
+            background-color: var(--surface-color); padding: 20px;
+            border-radius: var(--border-radius); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px; align-items: end; border: 1px solid var(--border-color);
+        }
+        
+        .control-group label { font-size: 0.9rem; margin-bottom: 5px; font-weight: 600; }
+        .main-controls input, .main-controls select {
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border-color);
+            border-radius: var(--border-radius); font-size: 1rem;
+            background-color: var(--bg-color); color: var(--text-color);
+        }
+
+        .project-table-container {
+            width: 100%; overflow-x: auto; background: var(--surface-color);
+            border-radius: var(--border-radius); box-shadow: var(--shadow-md);
+        }
+        .project-table { width: 100%; border-collapse: collapse; }
+        .project-table th, .project-table td {
+            padding: 12px 15px; text-align: left;
+            border-bottom: 1px solid var(--border-color); white-space: nowrap;
+        }
+        .project-table th { background-color: #fafafa; font-weight: 600; position: sticky; top: 0; z-index: 10; }
+        html[data-theme='dark'] .project-table th { background-color: #2a2a2a; }
+        .project-table tr:last-child td { border-bottom: none; }
+        .project-table tbody tr { transition: background-color 0.2s; cursor: pointer; }
+        .project-table tbody tr:hover { background-color: #f5faff; }
+        html[data-theme='dark'] .project-table tbody tr:hover { background-color: #2c3e50; }
+
+        .status-badge {
+            padding: 4px 12px; border-radius: 16px; color: white;
+            font-weight: 600; font-size: 0.85rem; display: inline-block;
+        }
+        .status-badge.進行中 { background-color: var(--status-inprogress); }
+        .status-badge.卡關中 { background-color: var(--status-stuck); color: #333; }
+        .status-badge.已驗收 { background-color: var(--status-accepted); }
+        .status-badge.成案 { background-color: var(--status-confirmed); }
+        .status-badge.未成案 { background-color: var(--status-cancelled); }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-container {
+            background-color: var(--surface-color); border-radius: var(--border-radius);
+            width: 95%; max-width: 1200px; max-height: 90vh;
+            display: flex; flex-direction: column; box-shadow: var(--shadow-md);
+        }
+        .modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { margin: 0; font-size: 1.5rem; }
+        .modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-color-secondary); }
+        .modal-body { padding: 24px; overflow-y: auto; }
+        .modal-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .form-group label { margin-bottom: 5px; font-weight: 600; }
+        .form-group label.required::after { content: ' *'; color: var(--status-cancelled); }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 8px 12px; border-radius: var(--border-radius);
+            border: 1px solid var(--border-color); font-size: 1rem;
+            background-color: var(--input-bg); color: var(--text-color);
+        }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .project-number-group { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: var(--border-radius); }
+        .project-number-group span { padding: 8px 0 8px 12px; background-color: var(--bg-color); color: var(--text-color-secondary); white-space: nowrap; }
+        .project-number-group input { border: none; background-color: transparent; }
+        
+        #file-import { display: none; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header class="main-header">
+            <h1><i class="fas fa-tasks"></i> Project Hub</h1>
+            <div class="main-actions">
+                <button class="button button-secondary theme-toggle-btn" id="theme-toggler" title="切換主題"><i class="fas fa-moon"></i></button>
+                <button class="button button-primary" id="add-project-btn"><i class="fas fa-plus"></i> 新增項目</button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="stat-card"><p class="stat-title">專案總數</p><p class="stat-value" id="stat-total">0</p></div>
+            <div class="stat-card"><p class="stat-title">進行中</p><p class="stat-value" id="stat-inprogress">0</p></div>
+            <div class="stat-card"><p class="stat-title">卡關中</p><p class="stat-value" id="stat-stuck">0</p></div>
+            <div class="stat-card"><p class="stat-title">已驗收</p><p class="stat-value" id="stat-accepted">0</p></div>
+            <div class="stat-card"><p class="stat-title">成案</p><p class="stat-value" id="stat-confirmed">0</p></div>
+            <div class="stat-card"><p class="stat-title">未成案</p><p class="stat-value" id="stat-notconfirmed">0</p></div>
+        </div>
+
+        <div class="main-controls">
+            <div class="control-group"><label for="search-input">關鍵字搜尋</label><input type="text" id="search-input" placeholder="專案號、客戶、型號..."></div>
+            <div class="control-group"><label for="filter-status">狀態篩選</label><select id="filter-status"><option value="">所有狀態</option><option value="進行中">進行中</option><option value="卡關中">卡關中</option><option value="已驗收">已驗收</option><option value="成案">成案</option><option value="未成案">未成案</option></select></div>
+            <div class="control-group"><label for="filter-owner">負責人篩選</label><input type="text" id="filter-owner" placeholder="業務、AE..."></div>
+            <div class="control-group">
+                <label for="sort-by">排序方式</label>
+                <select id="sort-by">
+                    <option value="updatedAt-desc">最後更新 (新到舊)</option>
+                    <option value="updatedAt-asc">最後更新 (舊到新)</option>
+                    <option value="shipDate-asc">出機日 (早到晚)</option>
+                    <option value="shipDate-desc">出機日 (晚到早)</option>
+                    <option value="estCompletionDate-asc">預計完成日 (早到晚)</option>
+                    <option value="projectNumber-asc">專案號 (A-Z)</option>
+                    <option value="projectNumber-desc">專案號 (Z-A)</option>
+                    <option value="customer-asc">客戶 (A-Z)</option>
+                    <option value="customer-desc">客戶 (Z-A)</option>
+                </select>
+            </div>
+            <button class="button button-secondary" id="clear-filters-btn"><i class="fas fa-times"></i> 清除篩選</button>
+        </div>
+
+        <div class="project-table-container">
+            <table class="project-table">
+                <thead>
+                    <tr>
+                        <th>類別</th>
+                        <th>專案號</th>
+                        <th>客戶</th>
+                        <th>需求機種</th>
+                        <th>狀態</th>
+                        <th>業務</th>
+                        <th>AE負責人</th>
+                        <th>出機日</th>
+                        <th>延遲(天)</th>
+                        <th>最後更新</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="project-list"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="project-modal">
+        <div class="modal-container">
+            <header class="modal-header">
+                <h2 id="modal-title">新增項目</h2>
+                <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+            </header>
+            <main class="modal-body">
+                <form id="project-form" class="modal-form">
+                    <input type="hidden" id="project-id">
+                    <div class="form-group"><label for="category" class="required">類別</label><select id="category" required><option value="專案">專案</option><option value="DEMO">DEMO</option><option value="評估">評估</option></select></div>
+                    <div class="form-group" id="projectNumberContainer">
+                        <label for="projectNumberSuffix">專案號</label>
+                        <div class="project-number-group">
+                            <span id="projectNumberPrefix"></span>
+                            <input type="text" id="projectNumberSuffix" maxlength="3" pattern="\d*" placeholder="XXX" title="請輸入數字">
+                        </div>
+                    </div>
+                    <div class="form-group" id="nonProjectNumberContainer" style="display: none;">
+                        <label for="projectNumber">編號/名稱</label>
+                        <input type="text" id="projectNumber" placeholder="DEMO或評估名稱">
+                    </div>
+                    <div class="form-group"><label for="status" class="required">狀態</label><select id="status" required><option value="進行中">進行中</option><option value="卡關中">卡關中</option><option value="已驗收">已驗收</option><option value="成案">成案</option><option value="未成案">未成案</option></select></div>
+                    <div class="form-group"><label for="customer" class="required">客戶</label><input type="text" id="customer" required></div>
+                    <div class="form-group"><label for="customerContact">客戶窗口</label><input type="text" id="customerContact"></div>
+                    <div class="form-group"><label for="quantity">數量(台)</label><input type="number" id="quantity" min="1" value="1"></div>
+                    <div class="form-group"><label for="machineType" class="required">需求機種</label><select id="machineType" required><option value="AI兩面機">AI兩面機</option><option value="AI六面機">AI六面機</option><option value="AI七面機">AI七面機</option><option value="AI八面機">AI八面機</option><option value="AI改機">AI改機</option><option value="手機殼檢查機">手機殼檢查機</option></select></div>
+                    <div class="form-group"><label for="componentType">材料類別</label><select id="componentType"><option value="電容">電容</option><option value="電阻">電阻</option><option value="電感">電感</option><option value="石英振盪器">石英振盪器</option><option value="光通訊器">光通訊器</option><option value="LED晶片">LED晶片</option><option value="陶瓷導熱片">陶瓷導熱片</option></select></div>
+                    <div class="form-group"><label for="componentModel">材料型號</label><input type="text" id="componentModel"></div>
+                    <div class="form-group"><label for="componentSize">材料尺寸</label><input type="text" id="componentSize"></div>
+                    <div class="form-group"><label for="salesLead" class="required">業務負責人</label><input type="text" id="salesLead" required></div>
+                    <div class="form-group"><label for="aeLead">AE負責人</label><input type="text" id="aeLead"></div>
+                    <div class="form-group"><label for="softwareRdLead">軟體RD</label><input type="text" id="softwareRdLead"></div>
+                    <div class="form-group"><label for="mechanicalRdLead">機構RD</label><input type="text" id="mechanicalRdLead"></div>
+                    <div class="form-group"><label for="electricalRdLead">電控RD</label><input type="text" id="electricalRdLead"></div>
+                    <div class="form-group"><label for="intern">實習生</label><input type="text" id="intern"></div>
+                    <div class="form-group"><label for="projectStartDate">成案日期</label><input type="date" id="projectStartDate"></div>
+                    <div class="form-group"><label for="estCompletionDate">預計完成日</label><input type="date" id="estCompletionDate"></div>
+                    <div class="form-group"><label for="actualCompletionDate">實際完成日</label><input type="date" id="actualCompletionDate"></div>
+                    <div class="form-group"><label for="shipDate">出機日</label><input type="date" id="shipDate"></div>
+                    <div class="form-group"><label for="delayedShipDate">延後出機日</label><input type="date" id="delayedShipDate"></div>
+                    <div class="form-group"><label for="tuningPeriod">調機時段</label><input type="text" id="tuningPeriod" placeholder="例如: 9/1 - 9/15"></div>
+                    <div class="form-group" style="grid-column: 1 / -1;"><label for="notes">備註</label><textarea id="notes" rows="4"></textarea></div>
+                </form>
+            </main>
+            <footer class="modal-footer">
+                <button class="button button-secondary" id="modal-cancel-btn">取消</button>
+                <button class="button button-primary" id="modal-save-btn"><i class="fas fa-save"></i> 儲存</button>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const projectList = document.getElementById('project-list');
+        const projectModal = document.getElementById('project-modal');
+        const projectForm = document.getElementById('project-form');
+        const modalTitle = document.getElementById('modal-title');
+        const categorySelect = document.getElementById('category');
+        const projectNumberContainer = document.getElementById('projectNumberContainer');
+        const nonProjectNumberContainer = document.getElementById('nonProjectNumberContainer');
+        const projectNumberPrefix = document.getElementById('projectNumberPrefix');
+        const projectNumberSuffix = document.getElementById('projectNumberSuffix');
+        const nonProjectNumberInput = document.getElementById('projectNumber');
+        const themeToggler = document.getElementById('theme-toggler');
+        
+        let projects = [];
+        let currentEditId = null;
+
+        const loadProjectsFromStorage = () => {
+            projects = JSON.parse(localStorage.getItem('projectHubV4')) || [];
+            updateDashboard();
+            renderProjects();
+        };
+
+        const saveProjectsToStorage = () => {
+            localStorage.setItem('projectHubV4', JSON.stringify(projects));
+            updateDashboard();
+        };
+        
+        const renderProjects = () => {
+            projectList.innerHTML = '';
+            const filters = getFilters();
+            const filteredProjects = applyFilters(projects, filters);
+
+            if (filteredProjects.length === 0) {
+                projectList.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 30px;">找不到項目...</td></tr>';
+                return;
+            }
+
+            filteredProjects.forEach(p => {
+                const delay = calculateDelay(p.shipDate, p.delayedShipDate);
+                const tr = document.createElement('tr');
+                tr.dataset.id = p.id;
+                tr.innerHTML = `
+                    <td>${p.category}</td>
+                    <td>${p.projectNumber || 'N/A'}</td>
+                    <td>${p.customer}</td>
+                    <td>${p.machineType}</td>
+                    <td><span class="status-badge ${p.status}">${p.status}</span></td>
+                    <td>${p.salesLead}</td>
+                    <td>${p.aeLead || '–'}</td>
+                    <td>${p.shipDate || '–'}</td>
+                    <td style="font-weight: bold; color: ${delay.color};">${delay.text}</td>
+                    <td>${formatDateTime(p.updatedAt)}</td>
+                    <td><button class="button button-secondary delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i></button></td>
+                `;
+                projectList.appendChild(tr);
+            });
+        };
+
+        const getFilters = () => ({
+            keyword: document.getElementById('search-input').value.toLowerCase(),
+            status: document.getElementById('filter-status').value,
+            owner: document.getElementById('filter-owner').value.toLowerCase(),
+            ...document.getElementById('sort-by').value.split('-').reduce((acc, v, i) => ({ ...acc, [i === 0 ? 'sortKey' : 'sortOrder']: v }), {})
+        });
+
+        const applyFilters = (projs, filters) => {
+            let result = projs.filter(p => {
+                const ownerMatch = filters.owner === '' || [p.salesLead, p.aeLead].some(o => o && o.toLowerCase().includes(filters.owner));
+                const keywordMatch = filters.keyword === '' || [p.projectNumber, p.customer, p.componentModel].some(f => f && f.toLowerCase().includes(filters.keyword));
+                const statusMatch = filters.status === '' || p.status === filters.status;
+                return ownerMatch && keywordMatch && statusMatch;
+            });
+            result.sort((a, b) => {
+                let valA = a[filters.sortKey] || '';
+                let valB = b[filters.sortKey] || '';
+                if (['updatedAt', 'createdAt', 'shipDate', 'estCompletionDate'].includes(filters.sortKey)) {
+                    valA = valA ? new Date(valA).getTime() : 0;
+                    valB = valB ? new Date(valB).getTime() : 0;
+                }
+                if (valA < valB) return filters.sortOrder === 'asc' ? -1 : 1;
+                if (valA > valB) return filters.sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+            return result;
+        };
+        
+        const calculateDelay = (originalDate, newDate) => {
+            if (!originalDate || !newDate) return { text: '–', color: 'inherit' };
+            const diffDays = Math.round((new Date(newDate) - new Date(originalDate)) / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) return { text: '0', color: 'var(--text-color-secondary)' };
+            if (diffDays > 0) return { text: `+${diffDays}`, color: 'var(--status-cancelled)' };
+            return { text: `${diffDays}`, color: 'var(--status-accepted)' };
+        };
+
+        const formatDateTime = (isoString) => {
+            if (!isoString) return '–';
+            const date = new Date(isoString);
+            return date.toLocaleString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit' }).replace(/\//g, '-');
+        };
+
+        const updateDashboard = () => {
+            document.getElementById('stat-total').textContent = projects.length;
+            document.getElementById('stat-inprogress').textContent = projects.filter(p => p.status === '進行中').length;
+            document.getElementById('stat-stuck').textContent = projects.filter(p => p.status === '卡關中').length;
+            document.getElementById('stat-accepted').textContent = projects.filter(p => p.status === '已驗收').length;
+            document.getElementById('stat-confirmed').textContent = projects.filter(p => p.status === '成案').length;
+            document.getElementById('stat-notconfirmed').textContent = projects.filter(p => p.status === '未成案').length;
+        };
+
+        const openModal = (mode, projectId = null) => {
+            projectForm.reset();
+            currentEditId = (mode === 'edit') ? projectId : null;
+            modalTitle.textContent = (mode === 'add') ? '新增項目' : '編輯項目';
+            
+            if (mode === 'edit') {
+                const project = projects.find(p => p.id === projectId);
+                if (project) {
+                    Object.keys(project).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) input.value = project[key];
+                    });
+                    if (project.category === '專案' && project.projectNumber) {
+                        const parts = project.projectNumber.split('-');
+                        projectNumberPrefix.textContent = `${parts[0]}-${parts[1]}-`;
+                        projectNumberSuffix.value = parts[2] || '';
+                    } else {
+                        nonProjectNumberInput.value = project.projectNumber || '';
+                    }
+                }
+            }
+            toggleProjectNumberInput();
+            projectModal.classList.add('active');
+        };
+
+        const closeModal = () => projectModal.classList.remove('active');
+
+        const handleFormSubmit = () => {
+            const now = new Date().toISOString();
+            const projectData = {
+                id: currentEditId || Date.now().toString(),
+                createdAt: currentEditId ? projects.find(p => p.id === currentEditId).createdAt : now,
+                updatedAt: now,
+            };
+            
+            projectForm.querySelectorAll('input, select, textarea').forEach(input => {
+                if (input.id) projectData[input.id] = input.value;
+            });
+
+            if (projectData.category === '專案') {
+                const suffix = projectNumberSuffix.value.padStart(3, '0');
+                projectData.projectNumber = `${projectNumberPrefix.textContent}${suffix}`;
+            } else {
+                projectData.projectNumber = nonProjectNumberInput.value;
+            }
+
+            if (currentEditId) {
+                const index = projects.findIndex(p => p.id === currentEditId);
+                projects[index] = { ...projects[index], ...projectData };
+            } else {
+                projects.push(projectData);
+            }
+
+            saveProjectsToStorage();
+            renderProjects();
+            closeModal();
+        };
+
+        const generateProjectNumberPrefix = () => {
+            const rocYear = (new Date().getFullYear() - 1911).toString().slice(-2);
+            return `ASAO-${rocYear}-`;
+        };
+        
+        const toggleProjectNumberInput = () => {
+            const isProject = categorySelect.value === '專案';
+            projectNumberContainer.style.display = isProject ? 'block' : 'none';
+            nonProjectNumberContainer.style.display = isProject ? 'none' : 'block';
+            if (isProject) {
+                projectNumberPrefix.textContent = generateProjectNumberPrefix();
+                if (!currentEditId) projectNumberSuffix.value = '';
+            }
+        };
+
+        const deleteProject = (id) => {
+            if (confirm('確定要刪除這個項目嗎？')) {
+                projects = projects.filter(p => p.id !== id);
+                saveProjectsToStorage();
+                renderProjects();
+            }
+        };
+
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeToggler.querySelector('i').className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        };
+
+        // Event Listeners
+        document.getElementById('add-project-btn').addEventListener('click', () => openModal('add'));
+        document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+        document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
+        document.getElementById('modal-save-btn').addEventListener('click', handleFormSubmit);
+        categorySelect.addEventListener('change', toggleProjectNumberInput);
+        themeToggler.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+        projectList.addEventListener('click', (e) => {
+            const targetRow = e.target.closest('tr');
+            if (!targetRow) return;
+
+            const deleteBtn = e.target.closest('.delete-btn');
+            if (deleteBtn) {
+                e.stopPropagation();
+                deleteProject(deleteBtn.dataset.id);
+            } else {
+                openModal('edit', targetRow.dataset.id);
+            }
+        });
+        
+        document.querySelectorAll('.main-controls input, .main-controls select').forEach(el => el.addEventListener('input', renderProjects));
+        document.getElementById('clear-filters-btn').addEventListener('click', () => {
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-owner').value = '';
+            renderProjects();
+        });
+
+        // Initial Load
+        setTheme(localStorage.getItem('theme') || 'light');
+        loadProjectsFromStorage();
+    });
+    </script>
+</body>
+</html>
