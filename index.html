@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Hub v4.0</title>
+    <title>Project Hub v2.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --primary-color: #007bff;
+            --primary-color-light: #e6f7ff;
             --primary-color-dark: #0056b3;
             --bg-color: #f4f7f9;
             --surface-color: #ffffff;
             --text-color: #2c3e50;
             --text-color-secondary: #596780;
             --border-color: #dee2e6;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
             --font-family: 'Segoe UI', 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
             --border-radius: 8px;
@@ -23,29 +25,31 @@
             --status-accepted: #28a745;
             --status-confirmed: #17a2b8;
             --status-cancelled: #dc3545;
+            --row-overdue-bg: #fffbe6;
         }
 
         html[data-theme='dark'] {
             --primary-color: #3694ff;
+            --primary-color-light: #1c3d5e;
             --primary-color-dark: #57a8ff;
             --bg-color: #121212;
             --surface-color: #1e1e1e;
             --text-color: #e0e0e0;
             --text-color-secondary: #a0a0a0;
             --border-color: #444;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
             --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-            --input-bg: #333;
-        }
-
-        html[data-theme='dark'] input[type="date"] {
-            color-scheme: dark;
+            --row-overdue-bg: #3c301a;
         }
 
         *, *::before, *::after { box-sizing: border-box; }
 
         body {
-            font-family: var(--font-family); margin: 0;
-            background-color: var(--bg-color); color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -56,82 +60,158 @@
         }
 
         .main-header {
-            background-color: var(--surface-color); padding: 16px 24px;
-            border-radius: var(--border-radius); box-shadow: var(--shadow-md);
-            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--surface-color);
+            padding: 16px 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 24px;
+            transition: background-color 0.3s;
         }
 
         .main-header h1 {
-            margin: 0; font-size: 1.8rem; color: var(--primary-color);
-            display: flex; align-items: center; gap: 12px;
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+        .main-header h1 i { font-size: 1.6rem; }
 
         .main-actions { display: flex; gap: 12px; align-items: center; }
 
         .button {
-            padding: 8px 16px; border: 1px solid transparent; border-radius: var(--border-radius);
-            font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
-            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
+        .button i { font-size: 1em; }
+
         .button-primary { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
         .button-primary:hover { background-color: var(--primary-color-dark); border-color: var(--primary-color-dark); }
+        
         .button-secondary { background-color: transparent; color: var(--text-color); border-color: var(--border-color); }
-        .button-secondary:hover { background-color: var(--bg-color); }
+        .button-secondary:hover { background-color: var(--primary-color-light); color: var(--primary-color); border-color: var(--primary-color); }
+        
         .theme-toggle-btn { font-size: 1.2rem; padding: 8px 10px; }
 
-        /* v4.0: Dashboard Stats Styles */
+        /* Dashboard Stats */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 20px;
             margin-bottom: 24px;
         }
         .stat-card {
-            background: var(--surface-color); padding: 20px; border-radius: var(--border-radius);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--border-color);
+            background: var(--surface-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
         }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
         .stat-card .stat-title {
-            font-size: 0.9rem; color: var(--text-color-secondary); margin: 0 0 8px 0; font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-color-secondary);
+            margin: 0 0 8px 0;
+            font-weight: 600;
         }
         .stat-card .stat-value {
-            font-size: 2rem; font-weight: 700; color: var(--primary-color); margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
         }
 
         .main-controls {
-            background-color: var(--surface-color); padding: 20px;
-            border-radius: var(--border-radius); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            margin-bottom: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px; align-items: end; border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
         }
         
-        .control-group label { font-size: 0.9rem; margin-bottom: 5px; font-weight: 600; }
+        .control-group { display: flex; flex-direction: column; }
+        .control-group label { font-size: 0.9rem; margin-bottom: 5px; font-weight: 600; color: var(--text-color-secondary); }
         .main-controls input, .main-controls select {
-            width: 100%; padding: 8px 12px; border: 1px solid var(--border-color);
-            border-radius: var(--border-radius); font-size: 1rem;
-            background-color: var(--bg-color); color: var(--text-color);
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+        .main-controls input:focus, .main-controls select:focus {
+             border-color: var(--primary-color);
+             box-shadow: 0 0 0 2px var(--primary-color-light);
+             outline: none;
         }
 
         .project-table-container {
-            width: 100%; overflow-x: auto; background: var(--surface-color);
-            border-radius: var(--border-radius); box-shadow: var(--shadow-md);
+            width: 100%;
+            overflow-x: auto;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
         }
+
         .project-table { width: 100%; border-collapse: collapse; }
         .project-table th, .project-table td {
-            padding: 12px 15px; text-align: left;
-            border-bottom: 1px solid var(--border-color); white-space: nowrap;
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
         }
-        .project-table th { background-color: #fafafa; font-weight: 600; position: sticky; top: 0; z-index: 10; }
-        html[data-theme='dark'] .project-table th { background-color: #2a2a2a; }
+        .project-table th {
+            background-color: var(--bg-color);
+            font-weight: 600;
+            color: var(--text-color-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
         .project-table tr:last-child td { border-bottom: none; }
         .project-table tbody tr { transition: background-color 0.2s; cursor: pointer; }
-        .project-table tbody tr:hover { background-color: #f5faff; }
-        html[data-theme='dark'] .project-table tbody tr:hover { background-color: #2c3e50; }
+        .project-table tbody tr:hover { background-color: var(--primary-color-light); }
+        .project-table tr.is-overdue { background-color: var(--row-overdue-bg); font-weight: 500; }
+        .project-table tr.is-overdue:hover { background-color: var(--status-stuck); color: #fff; }
+
 
         .status-badge {
-            padding: 4px 12px; border-radius: 16px; color: white;
-            font-weight: 600; font-size: 0.85rem; display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
         .status-badge.進行中 { background-color: var(--status-inprogress); }
         .status-badge.卡關中 { background-color: var(--status-stuck); color: #333; }
         .status-badge.已驗收 { background-color: var(--status-accepted); }
@@ -141,41 +221,70 @@
         /* Modal Styles */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000;
         }
         .modal-overlay.active { display: flex; }
         .modal-container {
-            background-color: var(--surface-color); border-radius: var(--border-radius);
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
             width: 95%; max-width: 1200px; max-height: 90vh;
-            display: flex; flex-direction: column; box-shadow: var(--shadow-md);
+            display: flex; flex-direction: column;
+            box-shadow: var(--shadow-md);
+            transform: scale(0.95);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         }
-        .modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-overlay.active .modal-container { transform: scale(1); opacity: 1; }
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
         .modal-header h2 { margin: 0; font-size: 1.5rem; }
         .modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-color-secondary); }
         .modal-body { padding: 24px; overflow-y: auto; }
-        .modal-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .form-group label { margin-bottom: 5px; font-weight: 600; }
+        .modal-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
         .form-group label.required::after { content: ' *'; color: var(--status-cancelled); }
         .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 8px 12px; border-radius: var(--border-radius);
-            border: 1px solid var(--border-color); font-size: 1rem;
-            background-color: var(--input-bg); color: var(--text-color);
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
-        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
-        
-        .project-number-group { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: var(--border-radius); }
-        .project-number-group span { padding: 8px 0 8px 12px; background-color: var(--bg-color); color: var(--text-color-secondary); white-space: nowrap; }
-        .project-number-group input { border: none; background-color: transparent; }
-        
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex; justify-content: flex-end; gap: 10px;
+        }
         #file-import { display: none; }
     </style>
 </head>
 <body>
+
     <div class="main-container">
         <header class="main-header">
             <h1><i class="fas fa-tasks"></i> Project Hub</h1>
             <div class="main-actions">
                 <button class="button button-secondary theme-toggle-btn" id="theme-toggler" title="切換主題"><i class="fas fa-moon"></i></button>
+                <input type="file" id="file-import" accept=".json">
+                <button class="button button-secondary" id="import-btn"><i class="fas fa-upload"></i> 匯入</button>
+                <button class="button button-secondary" id="export-btn"><i class="fas fa-download"></i> 匯出</button>
                 <button class="button button-primary" id="add-project-btn"><i class="fas fa-plus"></i> 新增項目</button>
             </div>
         </header>
@@ -185,53 +294,25 @@
             <div class="stat-card"><p class="stat-title">進行中</p><p class="stat-value" id="stat-inprogress">0</p></div>
             <div class="stat-card"><p class="stat-title">卡關中</p><p class="stat-value" id="stat-stuck">0</p></div>
             <div class="stat-card"><p class="stat-title">已驗收</p><p class="stat-value" id="stat-accepted">0</p></div>
-            <div class="stat-card"><p class="stat-title">成案</p><p class="stat-value" id="stat-confirmed">0</p></div>
-            <div class="stat-card"><p class="stat-title">未成案</p><p class="stat-value" id="stat-notconfirmed">0</p></div>
+            <div class="stat-card"><p class="stat-title">已成案</p><p class="stat-value" id="stat-confirmed">0</p></div>
         </div>
 
         <div class="main-controls">
             <div class="control-group"><label for="search-input">關鍵字搜尋</label><input type="text" id="search-input" placeholder="專案號、客戶、型號..."></div>
             <div class="control-group"><label for="filter-status">狀態篩選</label><select id="filter-status"><option value="">所有狀態</option><option value="進行中">進行中</option><option value="卡關中">卡關中</option><option value="已驗收">已驗收</option><option value="成案">成案</option><option value="未成案">未成案</option></select></div>
-            <div class="control-group"><label for="filter-owner">負責人篩選</label><input type="text" id="filter-owner" placeholder="業務、AE..."></div>
-            <div class="control-group">
-                <label for="sort-by">排序方式</label>
-                <select id="sort-by">
-                    <option value="updatedAt-desc">最後更新 (新到舊)</option>
-                    <option value="updatedAt-asc">最後更新 (舊到新)</option>
-                    <option value="shipDate-asc">出機日 (早到晚)</option>
-                    <option value="shipDate-desc">出機日 (晚到早)</option>
-                    <option value="estCompletionDate-asc">預計完成日 (早到晚)</option>
-                    <option value="projectNumber-asc">專案號 (A-Z)</option>
-                    <option value="projectNumber-desc">專案號 (Z-A)</option>
-                    <option value="customer-asc">客戶 (A-Z)</option>
-                    <option value="customer-desc">客戶 (Z-A)</option>
-                </select>
-            </div>
+            <div class="control-group"><label for="filter-owner">負責人篩選</label><input type="text" id="filter-owner" placeholder="業務、軟體/機構/電控RD..."></div>
+            <div class="control-group"><label for="sort-by">排序方式</label><select id="sort-by"><option value="updatedAt-desc">最後更新 (新到舊)</option><option value="updatedAt-asc">最後更新 (舊到新)</option><option value="shipDate-desc">出機日 (晚到早)</option><option value="shipDate-asc">出機日 (早到晚)</option><option value="createdAt-desc">建立日期 (新到舊)</option></select></div>
             <button class="button button-secondary" id="clear-filters-btn"><i class="fas fa-times"></i> 清除篩選</button>
         </div>
 
         <div class="project-table-container">
             <table class="project-table">
-                <thead>
-                    <tr>
-                        <th>類別</th>
-                        <th>專案號</th>
-                        <th>客戶</th>
-                        <th>需求機種</th>
-                        <th>狀態</th>
-                        <th>業務</th>
-                        <th>AE負責人</th>
-                        <th>出機日</th>
-                        <th>延遲(天)</th>
-                        <th>最後更新</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>類別</th><th>專案號</th><th>客戶</th><th>需求機種</th><th>狀態</th><th>業務</th><th>軟體RD</th><th>出機日</th><th>延遲(天)</th><th>最後更新</th><th>操作</th></tr></thead>
                 <tbody id="project-list"></tbody>
             </table>
         </div>
     </div>
-    
+
     <div class="modal-overlay" id="project-modal">
         <div class="modal-container">
             <header class="modal-header">
@@ -242,30 +323,20 @@
                 <form id="project-form" class="modal-form">
                     <input type="hidden" id="project-id">
                     <div class="form-group"><label for="category" class="required">類別</label><select id="category" required><option value="專案">專案</option><option value="DEMO">DEMO</option><option value="評估">評估</option></select></div>
-                    <div class="form-group" id="projectNumberContainer">
-                        <label for="projectNumberSuffix">專案號</label>
-                        <div class="project-number-group">
-                            <span id="projectNumberPrefix"></span>
-                            <input type="text" id="projectNumberSuffix" maxlength="3" pattern="\d*" placeholder="XXX" title="請輸入數字">
-                        </div>
-                    </div>
-                    <div class="form-group" id="nonProjectNumberContainer" style="display: none;">
-                        <label for="projectNumber">編號/名稱</label>
-                        <input type="text" id="projectNumber" placeholder="DEMO或評估名稱">
-                    </div>
+                    <div class="form-group"><label for="projectNumber">專案號</label><input type="text" id="projectNumber" placeholder="選擇'專案'類別後自動生成"></div>
                     <div class="form-group"><label for="status" class="required">狀態</label><select id="status" required><option value="進行中">進行中</option><option value="卡關中">卡關中</option><option value="已驗收">已驗收</option><option value="成案">成案</option><option value="未成案">未成案</option></select></div>
                     <div class="form-group"><label for="customer" class="required">客戶</label><input type="text" id="customer" required></div>
                     <div class="form-group"><label for="customerContact">客戶窗口</label><input type="text" id="customerContact"></div>
                     <div class="form-group"><label for="quantity">數量(台)</label><input type="number" id="quantity" min="1" value="1"></div>
-                    <div class="form-group"><label for="machineType" class="required">需求機種</label><select id="machineType" required><option value="AI兩面機">AI兩面機</option><option value="AI六面機">AI六面機</option><option value="AI七面機">AI七面機</option><option value="AI八面機">AI八面機</option><option value="AI改機">AI改機</option><option value="手機殼檢查機">手機殼檢查機</option></select></div>
+                    <div class="form-group"><label for="machineType" class="required">需求機種</label><select id="machineType" required><option value="AI六面機">AI六面機</option><option value="AI七面機">AI七面機</option><option value="AI八面機">AI八面機</option><option value="AI改機">AI改機</option><option value="手機殼檢查機">手機殼檢查機</option></select></div>
                     <div class="form-group"><label for="componentType">材料類別</label><select id="componentType"><option value="電容">電容</option><option value="電阻">電阻</option><option value="電感">電感</option><option value="石英振盪器">石英振盪器</option><option value="光通訊器">光通訊器</option><option value="LED晶片">LED晶片</option><option value="陶瓷導熱片">陶瓷導熱片</option></select></div>
                     <div class="form-group"><label for="componentModel">材料型號</label><input type="text" id="componentModel"></div>
                     <div class="form-group"><label for="componentSize">材料尺寸</label><input type="text" id="componentSize"></div>
                     <div class="form-group"><label for="salesLead" class="required">業務負責人</label><input type="text" id="salesLead" required></div>
-                    <div class="form-group"><label for="aeLead">AE負責人</label><input type="text" id="aeLead"></div>
                     <div class="form-group"><label for="softwareRdLead">軟體RD</label><input type="text" id="softwareRdLead"></div>
                     <div class="form-group"><label for="mechanicalRdLead">機構RD</label><input type="text" id="mechanicalRdLead"></div>
                     <div class="form-group"><label for="electricalRdLead">電控RD</label><input type="text" id="electricalRdLead"></div>
+                    <div class="form-group"><label for="aeLead">AE負責人</label><input type="text" id="aeLead"></div>
                     <div class="form-group"><label for="intern">實習生</label><input type="text" id="intern"></div>
                     <div class="form-group"><label for="projectStartDate">成案日期</label><input type="date" id="projectStartDate"></div>
                     <div class="form-group"><label for="estCompletionDate">預計完成日</label><input type="date" id="estCompletionDate"></div>
@@ -273,7 +344,7 @@
                     <div class="form-group"><label for="shipDate">出機日</label><input type="date" id="shipDate"></div>
                     <div class="form-group"><label for="delayedShipDate">延後出機日</label><input type="date" id="delayedShipDate"></div>
                     <div class="form-group"><label for="tuningPeriod">調機時段</label><input type="text" id="tuningPeriod" placeholder="例如: 9/1 - 9/15"></div>
-                    <div class="form-group" style="grid-column: 1 / -1;"><label for="notes">備註</label><textarea id="notes" rows="4"></textarea></div>
+                    <div class="form-group full-width"><label for="notes">備註</label><textarea id="notes" rows="4"></textarea></div>
                 </form>
             </main>
             <footer class="modal-footer">
@@ -285,33 +356,73 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const projectList = document.getElementById('project-list');
+        // --- DOM Elements ---
+        const themeToggler = document.getElementById('theme-toggler');
         const projectModal = document.getElementById('project-modal');
         const projectForm = document.getElementById('project-form');
+        const projectList = document.getElementById('project-list');
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+
+        // Modal elements
         const modalTitle = document.getElementById('modal-title');
-        const categorySelect = document.getElementById('category');
-        const projectNumberContainer = document.getElementById('projectNumberContainer');
-        const nonProjectNumberContainer = document.getElementById('nonProjectNumberContainer');
-        const projectNumberPrefix = document.getElementById('projectNumberPrefix');
-        const projectNumberSuffix = document.getElementById('projectNumberSuffix');
-        const nonProjectNumberInput = document.getElementById('projectNumber');
-        const themeToggler = document.getElementById('theme-toggler');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const modalSaveBtn = document.getElementById('modal-save-btn');
         
+        // Form inputs
+        const categorySelect = document.getElementById('category');
+        const projectNumberInput = document.getElementById('projectNumber');
+        
+        // Filter & Search
+        const searchInput = document.getElementById('search-input');
+        const filterStatus = document.getElementById('filter-status');
+        const filterOwner = document.getElementById('filter-owner');
+        const sortBy = document.getElementById('sort-by');
+        
+        // Data I/O
+        const exportBtn = document.getElementById('export-btn');
+        const importBtn = document.getElementById('import-btn');
+        const fileImport = document.getElementById('file-import');
+        
+        // Stat Cards
+        const statCards = {
+            total: document.getElementById('stat-total'),
+            inprogress: document.getElementById('stat-inprogress'),
+            stuck: document.getElementById('stat-stuck'),
+            accepted: document.getElementById('stat-accepted'),
+            confirmed: document.getElementById('stat-confirmed')
+        };
+
         let projects = [];
         let currentEditId = null;
 
-        const loadProjectsFromStorage = () => {
-            projects = JSON.parse(localStorage.getItem('projectHubV4')) || [];
+        // --- THEME MANAGEMENT ---
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeToggler.querySelector('i').className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        themeToggler.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+        
+        // --- DATA MANAGEMENT ---
+        function loadProjectsFromStorage() {
+            const storedProjects = localStorage.getItem('aoiProjectsV2'); // Use new key for V2
+            projects = storedProjects ? JSON.parse(storedProjects) : [];
             updateDashboard();
             renderProjects();
-        };
+        }
 
-        const saveProjectsToStorage = () => {
-            localStorage.setItem('projectHubV4', JSON.stringify(projects));
+        function saveProjectsToStorage() {
+            localStorage.setItem('aoiProjectsV2', JSON.stringify(projects));
             updateDashboard();
-        };
+        }
         
-        const renderProjects = () => {
+        // --- RENDERING & UI ---
+        function renderProjects() {
             projectList.innerHTML = '';
             const filters = getFilters();
             const filteredProjects = applyFilters(projects, filters);
@@ -321,45 +432,65 @@
                 return;
             }
 
-            filteredProjects.forEach(p => {
-                const delay = calculateDelay(p.shipDate, p.delayedShipDate);
+            filteredProjects.forEach(project => {
+                const delay = calculateDelay(project.shipDate, project.delayedShipDate);
+                const delayText = delay.text ? `${delay.text}` : '–';
+                
+                const isOverdue = project.estCompletionDate && new Date(project.estCompletionDate) < new Date() && !['已驗收', '未成案'].includes(project.status);
+                
                 const tr = document.createElement('tr');
-                tr.dataset.id = p.id;
+                tr.dataset.id = project.id;
+                if(isOverdue) tr.classList.add('is-overdue');
+
                 tr.innerHTML = `
-                    <td>${p.category}</td>
-                    <td>${p.projectNumber || 'N/A'}</td>
-                    <td>${p.customer}</td>
-                    <td>${p.machineType}</td>
-                    <td><span class="status-badge ${p.status}">${p.status}</span></td>
-                    <td>${p.salesLead}</td>
-                    <td>${p.aeLead || '–'}</td>
-                    <td>${p.shipDate || '–'}</td>
-                    <td style="font-weight: bold; color: ${delay.color};">${delay.text}</td>
-                    <td>${formatDateTime(p.updatedAt)}</td>
-                    <td><button class="button button-secondary delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i></button></td>
+                    <td>${project.category}</td>
+                    <td>${project.projectNumber || 'N/A'}</td>
+                    <td>${project.customer}</td>
+                    <td>${project.machineType}</td>
+                    <td><span class="status-badge ${project.status}">${project.status}</span></td>
+                    <td>${project.salesLead}</td>
+                    <td>${project.softwareRdLead || '–'}</td>
+                    <td>${project.shipDate || '–'}</td>
+                    <td style="color:${delay.color}; font-weight: bold;">${delayText}</td>
+                    <td>${formatDateTime(project.updatedAt)}</td>
+                    <td class="action-buttons">
+                        <button class="button button-secondary delete-btn" data-id="${project.id}"><i class="fas fa-trash"></i></button>
+                    </td>
                 `;
                 projectList.appendChild(tr);
             });
-        };
+        }
+        
+        function updateDashboard() {
+            statCards.total.textContent = projects.length;
+            statCards.inprogress.textContent = projects.filter(p => p.status === '進行中').length;
+            statCards.stuck.textContent = projects.filter(p => p.status === '卡關中').length;
+            statCards.accepted.textContent = projects.filter(p => p.status === '已驗收').length;
+            statCards.confirmed.textContent = projects.filter(p => p.status === '成案').length;
+        }
 
-        const getFilters = () => ({
-            keyword: document.getElementById('search-input').value.toLowerCase(),
-            status: document.getElementById('filter-status').value,
-            owner: document.getElementById('filter-owner').value.toLowerCase(),
-            ...document.getElementById('sort-by').value.split('-').reduce((acc, v, i) => ({ ...acc, [i === 0 ? 'sortKey' : 'sortOrder']: v }), {})
-        });
-
-        const applyFilters = (projs, filters) => {
-            let result = projs.filter(p => {
-                const ownerMatch = filters.owner === '' || [p.salesLead, p.aeLead].some(o => o && o.toLowerCase().includes(filters.owner));
-                const keywordMatch = filters.keyword === '' || [p.projectNumber, p.customer, p.componentModel].some(f => f && f.toLowerCase().includes(filters.keyword));
+        function getFilters() {
+            const [sortKey, sortOrder] = sortBy.value.split('-');
+            return {
+                keyword: searchInput.value.toLowerCase(),
+                status: filterStatus.value,
+                owner: filterOwner.value.toLowerCase(),
+                sortKey, sortOrder
+            };
+        }
+        
+        function applyFilters(projectsToFilter, filters) {
+            let result = projectsToFilter.filter(p => {
+                const ownerMatch = filters.owner === '' || [p.salesLead, p.softwareRdLead, p.mechanicalRdLead, p.electricalRdLead, p.aeLead].some(owner => owner && owner.toLowerCase().includes(filters.owner));
+                const keywordMatch = filters.keyword === '' || [p.projectNumber, p.customer, p.componentModel].some(field => field && field.toLowerCase().includes(filters.keyword));
                 const statusMatch = filters.status === '' || p.status === filters.status;
                 return ownerMatch && keywordMatch && statusMatch;
             });
+            
             result.sort((a, b) => {
                 let valA = a[filters.sortKey] || '';
                 let valB = b[filters.sortKey] || '';
-                if (['updatedAt', 'createdAt', 'shipDate', 'estCompletionDate'].includes(filters.sortKey)) {
+                if (['updatedAt', 'createdAt', 'shipDate'].includes(filters.sortKey)) {
                     valA = valA ? new Date(valA).getTime() : 0;
                     valB = valB ? new Date(valB).getTime() : 0;
                 }
@@ -368,76 +499,50 @@
                 return 0;
             });
             return result;
-        };
-        
-        const calculateDelay = (originalDate, newDate) => {
-            if (!originalDate || !newDate) return { text: '–', color: 'inherit' };
+        }
+
+        function calculateDelay(originalDate, newDate) {
+            if (!originalDate || !newDate) return { text: null };
             const diffDays = Math.round((new Date(newDate) - new Date(originalDate)) / (1000 * 60 * 60 * 24));
             if (diffDays === 0) return { text: '0', color: 'var(--text-color-secondary)' };
             if (diffDays > 0) return { text: `+${diffDays}`, color: 'var(--status-cancelled)' };
             return { text: `${diffDays}`, color: 'var(--status-accepted)' };
-        };
-
-        const formatDateTime = (isoString) => {
+        }
+        
+        function formatDateTime(isoString) {
             if (!isoString) return '–';
             const date = new Date(isoString);
             return date.toLocaleString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit' }).replace(/\//g, '-');
-        };
+        }
 
-        const updateDashboard = () => {
-            document.getElementById('stat-total').textContent = projects.length;
-            document.getElementById('stat-inprogress').textContent = projects.filter(p => p.status === '進行中').length;
-            document.getElementById('stat-stuck').textContent = projects.filter(p => p.status === '卡關中').length;
-            document.getElementById('stat-accepted').textContent = projects.filter(p => p.status === '已驗收').length;
-            document.getElementById('stat-confirmed').textContent = projects.filter(p => p.status === '成案').length;
-            document.getElementById('stat-notconfirmed').textContent = projects.filter(p => p.status === '未成案').length;
-        };
-
-        const openModal = (mode, projectId = null) => {
+        // --- MODAL & FORM ---
+        function openModal(mode, projectId = null) {
             projectForm.reset();
             currentEditId = (mode === 'edit') ? projectId : null;
             modalTitle.textContent = (mode === 'add') ? '新增項目' : '編輯項目';
-            
             if (mode === 'edit') {
                 const project = projects.find(p => p.id === projectId);
-                if (project) {
-                    Object.keys(project).forEach(key => {
-                        const input = document.getElementById(key);
-                        if (input) input.value = project[key];
-                    });
-                    if (project.category === '專案' && project.projectNumber) {
-                        const parts = project.projectNumber.split('-');
-                        projectNumberPrefix.textContent = `${parts[0]}-${parts[1]}-`;
-                        projectNumberSuffix.value = parts[2] || '';
-                    } else {
-                        nonProjectNumberInput.value = project.projectNumber || '';
-                    }
-                }
+                if (project) Object.keys(project).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) input.value = project[key];
+                });
             }
             toggleProjectNumberInput();
             projectModal.classList.add('active');
-        };
+        }
 
-        const closeModal = () => projectModal.classList.remove('active');
+        function closeModal() { projectModal.classList.remove('active'); }
 
-        const handleFormSubmit = () => {
+        function handleFormSubmit() {
             const now = new Date().toISOString();
             const projectData = {
                 id: currentEditId || Date.now().toString(),
-                createdAt: currentEditId ? projects.find(p => p.id === currentEditId).createdAt : now,
+                createdAt: currentEditId ? projects.find(p=>p.id === currentEditId).createdAt : now,
                 updatedAt: now,
             };
-            
-            projectForm.querySelectorAll('input, select, textarea').forEach(input => {
-                if (input.id) projectData[input.id] = input.value;
-            });
 
-            if (projectData.category === '專案') {
-                const suffix = projectNumberSuffix.value.padStart(3, '0');
-                projectData.projectNumber = `${projectNumberPrefix.textContent}${suffix}`;
-            } else {
-                projectData.projectNumber = nonProjectNumberInput.value;
-            }
+            const formInputs = projectForm.querySelectorAll('input, select, textarea');
+            formInputs.forEach(input => { if (input.id) projectData[input.id] = input.value; });
 
             if (currentEditId) {
                 const index = projects.findIndex(p => p.id === currentEditId);
@@ -445,72 +550,99 @@
             } else {
                 projects.push(projectData);
             }
-
             saveProjectsToStorage();
             renderProjects();
             closeModal();
-        };
+        }
 
-        const generateProjectNumberPrefix = () => {
-            const rocYear = (new Date().getFullYear() - 1911).toString().slice(-2);
-            return `ASAO-${rocYear}-`;
-        };
-        
-        const toggleProjectNumberInput = () => {
-            const isProject = categorySelect.value === '專案';
-            projectNumberContainer.style.display = isProject ? 'block' : 'none';
-            nonProjectNumberContainer.style.display = isProject ? 'none' : 'block';
-            if (isProject) {
-                projectNumberPrefix.textContent = generateProjectNumberPrefix();
-                if (!currentEditId) projectNumberSuffix.value = '';
+        function toggleProjectNumberInput() {
+            if (categorySelect.value === '專案') {
+                projectNumberInput.readOnly = true;
+                projectNumberInput.style.backgroundColor = 'var(--border-color)';
+                if (!currentEditId) projectNumberInput.value = generateProjectNumber();
+            } else {
+                projectNumberInput.readOnly = false;
+                projectNumberInput.style.backgroundColor = '';
+                projectNumberInput.value = '';
             }
-        };
+        }
 
-        const deleteProject = (id) => {
-            if (confirm('確定要刪除這個項目嗎？')) {
+        function generateProjectNumber() {
+            const rocYear = (new Date().getFullYear() - 1911).toString().slice(-2);
+            const projectsThisYear = projects.filter(p => p.category === '專案' && p.projectNumber && p.projectNumber.startsWith(`ASAO-${rocYear}`));
+            const nextId = (projectsThisYear.length + 1).toString().padStart(3, '0');
+            return `ASAO-${rocYear}-${nextId}`;
+        }
+        
+        function deleteProject(id) {
+            if (confirm('確定要刪除這個項目嗎？此操作無法復原。')) {
                 projects = projects.filter(p => p.id !== id);
                 saveProjectsToStorage();
                 renderProjects();
             }
-        };
+        }
+        
+        // --- DATA IMPORT/EXPORT ---
+        function exportData() {
+            if (projects.length === 0) return alert('沒有資料可以匯出。');
+            const dataStr = JSON.stringify(projects, null, 2);
+            const url = URL.createObjectURL(new Blob([dataStr], {type: "application/json"}));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `project_hub_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
 
-        const setTheme = (theme) => {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            themeToggler.querySelector('i').className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        };
-
-        // Event Listeners
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (projects.length > 0 && !confirm('匯入資料將覆蓋現有所有資料，確定繼續嗎？')) {
+                fileImport.value = ''; return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        projects = imported;
+                        saveProjectsToStorage();
+                        loadProjectsFromStorage();
+                        alert('資料匯入成功！');
+                    } else throw new Error('JSON 格式不正確。');
+                } catch (error) { alert('讀取檔案失敗：' + error.message); }
+                 finally { fileImport.value = ''; }
+            };
+            reader.readAsText(file);
+        }
+        
+        // --- Event Listeners ---
         document.getElementById('add-project-btn').addEventListener('click', () => openModal('add'));
-        document.getElementById('modal-close-btn').addEventListener('click', closeModal);
-        document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
-        document.getElementById('modal-save-btn').addEventListener('click', handleFormSubmit);
+        modalCloseBtn.addEventListener('click', closeModal);
+        modalCancelBtn.addEventListener('click', closeModal);
+        modalSaveBtn.addEventListener('click', handleFormSubmit);
         categorySelect.addEventListener('change', toggleProjectNumberInput);
-        themeToggler.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
-
         projectList.addEventListener('click', (e) => {
-            const targetRow = e.target.closest('tr');
-            if (!targetRow) return;
-
-            const deleteBtn = e.target.closest('.delete-btn');
-            if (deleteBtn) {
-                e.stopPropagation();
-                deleteProject(deleteBtn.dataset.id);
+            if (e.target.closest('.delete-btn')) {
+                e.stopPropagation(); // Prevent opening modal
+                deleteProject(e.target.closest('.delete-btn').dataset.id);
             } else {
-                openModal('edit', targetRow.dataset.id);
+                const row = e.target.closest('tr');
+                if (row && row.dataset.id) openModal('edit', row.dataset.id);
             }
         });
-        
-        document.querySelectorAll('.main-controls input, .main-controls select').forEach(el => el.addEventListener('input', renderProjects));
-        document.getElementById('clear-filters-btn').addEventListener('click', () => {
-            document.getElementById('search-input').value = '';
-            document.getElementById('filter-status').value = '';
-            document.getElementById('filter-owner').value = '';
+        [searchInput, filterStatus, filterOwner, sortBy].forEach(el => el.addEventListener('input', renderProjects));
+        clearFiltersBtn.addEventListener('click', () => {
+            searchInput.value = ''; filterStatus.value = ''; filterOwner.value = '';
             renderProjects();
         });
-
-        // Initial Load
-        setTheme(localStorage.getItem('theme') || 'light');
+        exportBtn.addEventListener('click', exportData);
+        importBtn.addEventListener('click', () => fileImport.click());
+        fileImport.addEventListener('change', importData);
+        
+        // --- Initial Load ---
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
         loadProjectsFromStorage();
     });
     </script>
